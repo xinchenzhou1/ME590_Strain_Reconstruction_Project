@@ -28,7 +28,7 @@ dy: 80
 energy: 51.9957
 etalimit: 81
 grainTemp: Config_Files/grain_template.yml
-hexomapFile: ../AuxData/Ti7_WithHRM_2ndLoad_z1_.mic.LBFS
+hexomapFile: AuxData/Ti7_WithHRM_2ndLoad_z1_.mic.LBFS
 lattice:
 - 2.92539
 - 2.92539

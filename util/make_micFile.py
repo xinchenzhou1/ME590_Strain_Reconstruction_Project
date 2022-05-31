@@ -18,13 +18,21 @@ import shutil
 import os
 
 
-def find_grains(Cfg,conf_tol,match_tol):
-    a=MicFile(Cfg.hexomapFile)
-    grid_x,grid_y=np.meshgrid(np.arange(-0.5,0.2,0.002),np.arange(-0.4,0.4,0.002))
-    grid_c = griddata(a.snp[:,0:2],a.snp[:,9],(grid_x,grid_y),method='nearest')
-    grid_e1 = griddata(a.snp[:,0:2],a.snp[:,6],(grid_x,grid_y),method='nearest')
-    grid_e2 = griddata(a.snp[:,0:2],a.snp[:,7],(grid_x,grid_y),method='nearest')
-    grid_e3 = griddata(a.snp[:,0:2],a.snp[:,8],(grid_x,grid_y),method='nearest')
+def find_grains(Cfg,conf_tol,match_tol,voxel_size =0.002):
+    if Cfg.hexomapFile[-3:] == 'npy':
+        a = np.load(Cfg.hexomapFile)
+        grid_x,grid_y=np.meshgrid(np.arange(a[:,0].min(),a[:,0].max(),voxel_size),np.arange(a[:,1].min(),a[:,1].max(),voxel_size))
+        grid_c = griddata(a[:,0:2],a[:,6],(grid_x,grid_y),method='nearest')
+        grid_e1 = griddata(a[:,0:2],a[:,3],(grid_x,grid_y),method='nearest')
+        grid_e2 = griddata(a[:,0:2],a[:,4],(grid_x,grid_y),method='nearest')
+        grid_e3 = griddata(a[:,0:2],a[:,5],(grid_x,grid_y),method='nearest')
+    else:
+        a=MicFile(Cfg.hexomapFile)
+        grid_x,grid_y=np.meshgrid(np.arange(a.snp[:,0].min(),a.snp[:,0].max(),voxel_size),np.arange(a.snp[:,1].min(),a.snp[:,1].max(),voxel_size))
+        grid_c = griddata(a.snp[:,0:2],a.snp[:,9],(grid_x,grid_y),method='nearest')
+        grid_e1 = griddata(a.snp[:,0:2],a.snp[:,6],(grid_x,grid_y),method='nearest')
+        grid_e2 = griddata(a.snp[:,0:2],a.snp[:,7],(grid_x,grid_y),method='nearest')
+        grid_e3 = griddata(a.snp[:,0:2],a.snp[:,8],(grid_x,grid_y),method='nearest')
 
     g = np.where(grid_c>conf_tol,1,0)
 
@@ -54,11 +62,11 @@ def find_grains(Cfg,conf_tol,match_tol):
         newGrainIDMap[newGrainIDMap==ggg] = i
         
     GrainIDMap = newGrainIDMap
-
+    print(grid_x.min(),grid_y.min())
     with h5py.File(Cfg.micFile,'w') as f:
-        ds=f.create_dataset("origin", data = np.array([-0.5,-0.4]))
+        ds=f.create_dataset("origin", data = np.array([grid_x.min(),grid_y.min()]))
         ds.attrs[u'units'] = u'mm'
-        ds=f.create_dataset("stepSize", data = np.array([0.002,0.002]))
+        ds=f.create_dataset("stepSize", data = np.array([voxel_size,voxel_size]))
         ds.attrs[u'units'] = u'mm'
         f.create_dataset("Xcoordinate", data = grid_x)
         f.create_dataset("Ycoordinate", data = grid_y)

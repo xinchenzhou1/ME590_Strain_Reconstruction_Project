@@ -1,8 +1,8 @@
-JCenter: 1181.5907677474152
+JCenter: 1186.4318343844322
 JPixelNum: 2048
-KCenter: 2021.651157930998
+KCenter: 2024.6218379492848
 KPixelNum: 2048
-Ldistance: 7.046396514522643
+Ldistance: 7.094428378944772
 atoms:
 - - 1/3.0
   - 2/3.0
@@ -28,7 +28,7 @@ dy: 80
 energy: 51.9957
 etalimit: 81
 grainTemp: Config_Files/grain_template.yml
-hexomapFile: ../AuxData/Ti7_WithHRM_2ndLoad_z1_.mic.LBFS
+hexomapFile: AuxData/Ti7_WithHRM_2ndLoad_z1_.mic.LBFS
 lattice:
 - 2.92539
 - 2.92539
@@ -43,9 +43,9 @@ omgRange:
 pixelSize: 1.454
 sampleName: Ti7
 tilt:
-- 89.6525298052245
-- 90.19876705397303
-- 0.17270025748320333
+- 89.71374702227524
+- 89.7687047632526
+- 0.27785333780438437
 window:
 - 300
 - 160
