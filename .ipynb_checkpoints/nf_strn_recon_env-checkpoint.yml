@@ -1,0 +1,13 @@
+name: nf_recon
+channels:
+  - defaults
+dependencies:
+  - python=3
+  - jupyterlab
+  - cuda-python
+  - numpy
+  - pyaml
+  - scipy
+  - h5py
+  - matplotlib
+prefix: /home/mjwilkin/anaconda3/envs/nf_recon

@@ -1,0 +1,34 @@
+
+grainID: 15
+grainPos: 
+- 0.178
+- 0.116
+- 0.000
+euler:
+- 291.972
+- 66.974
+- 68.1056
+# Files and file path
+avgDistortion:
+- - 1.0
+  - 0.0
+  - 0.0
+- - 0.0
+  - 1.0
+  - 0.0
+- - 0.0
+  - 0.0
+  - 1.0
+# input file for reconstruction mode
+# output file of simulation mode
+peakFile: 'Peak_Files/Peaks_g15.hdf5'
+
+# input file for reconstruction mode
+# input file for simulation mode
+micFile: 'Mic_File/Ti7HRM2nd.hdf5'
+
+# output file of reconstruction mode
+# neglected by simulation mode
+recFile: 'Rec_Files/Rec_g15.hdf5'
+configFile: 'Config_Files/Config.yml'
+pixHitFile: 'hold'
