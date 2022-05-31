@@ -229,8 +229,8 @@ def optimize_detector(centers_of_mass,Cfg,grain,cutoff=[ 60,30,10]):
         pars['K']=x[1]+ Cfg.KCenter 
         pars['L']=x[2]*10**(-3) + Cfg.Ldistance 
         pars['tilt']= Rot.EulerZXZ2Mat((x[3:6]+np.array(Cfg.tilt))/180*np.pi)
-        pars['x']=grain.grainPos[0]
-        pars['y']=grain.grainPos[1]
+        pars['x']=x[6]*10**(-3)+grain.grainPos[0]
+        pars['y']=x[7]*10**(-3)+grain.grainPos[1]
         pars['distortion']=x[-9:].reshape((3,3))*10**(-3)+np.eye(3)
         DetDefault.Move(pars['J'],pars['K'],np.array([pars['L'],0,0]),pars['tilt'])
         pos=np.array([pars['x'], pars['y'], 0])
@@ -283,8 +283,8 @@ def optimize_detector(centers_of_mass,Cfg,grain,cutoff=[ 60,30,10]):
 
 
 
-        res=optimize.minimize(CostFunc,np.zeros(15)
-                              ,bounds=[(-5,5),(-5,2),(-100,50)]+3*[(-0.3,3)]+9*[(-5,10)]
+        res=optimize.minimize(CostFunc,np.zeros(17)
+                              ,bounds=[(-5,5),(-5,2),(-100,50)]+3*[(-0.3,3)]+2*[(-10,20)]+9*[(-5,10)]
                              )
         newPs=SimP(res['x'])
         oldPs=SimP(np.zeros(15))
