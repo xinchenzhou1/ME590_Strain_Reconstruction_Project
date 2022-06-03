@@ -21,11 +21,13 @@ import os
 def find_grains(Cfg,conf_tol,match_tol,voxel_size =0.002):
     if Cfg.hexomapFile[-3:] == 'npy':
         a = np.load(Cfg.hexomapFile)
-        grid_x,grid_y=np.meshgrid(np.arange(a[:,0].min(),a[:,0].max(),voxel_size),np.arange(a[:,1].min(),a[:,1].max(),voxel_size))
-        grid_c = griddata(a[:,0:2],a[:,6],(grid_x,grid_y),method='nearest')
-        grid_e1 = griddata(a[:,0:2],a[:,3],(grid_x,grid_y),method='nearest')
-        grid_e2 = griddata(a[:,0:2],a[:,4],(grid_x,grid_y),method='nearest')
-        grid_e3 = griddata(a[:,0:2],a[:,5],(grid_x,grid_y),method='nearest')
+
+        grid_x = a[:,:,0]
+        grid_y = a[:,:,1]
+        grid_c = a[:,:,6]
+        grid_e1 = a[:,:,3]
+        grid_e2 = a[:,:,4]
+        grid_e3 = a[:,:,5]
     else:
         a=MicFile(Cfg.hexomapFile)
         grid_x,grid_y=np.meshgrid(np.arange(a.snp[:,0].min(),a.snp[:,0].max(),voxel_size),np.arange(a.snp[:,1].min(),a.snp[:,1].max(),voxel_size))
