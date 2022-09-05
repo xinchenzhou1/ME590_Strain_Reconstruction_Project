@@ -1,0 +1,52 @@
+JCenter: 1181.3316918374744
+JPixelNum: 2048
+KCenter: 2023.5283619491738
+KPixelNum: 2048
+Ldistance: 7.066380129647859
+atoms:
+- - 1/3.0
+  - 2/3.0
+  - 1/4.0
+  - 22
+- - 2/3.0
+  - 1/3.0
+  - 3/4.0
+  - 22
+basis:
+- - 1.0
+  - 0.0
+  - 0.0
+- - -0.5
+  - 0.8660254
+  - 0.0
+- - 0.0
+  - 0.0
+  - 1.0
+dataFile: /mnt/data/sparrow_data2/NF-DataSets/2013-07_NF-Strain1/V/Suter_Jul13/NF/Ti7_WithHRM_Under2ndLoad/Ti7_WithHRM_Under2ndLoad__
+dx: 150
+dy: 80
+energy: 51.9957
+etalimit: 81
+grainTemp: Config_Files/grain_template.yml
+hexomapFile: AuxData/Ti7_WithHRM_2ndLoad_z1_.mic.LBFS
+lattice:
+- 2.92539
+- 2.92539
+- 4.67399
+maxQ: 13
+micFile: Mic_File/Ti7HRM2nd.hdf5
+mode: rec
+omgInterval: 0.05
+omgRange:
+- 0
+- 180
+pixelSize: 1.454
+sampleName: Ti7
+tilt:
+- 89.55846471845794
+- 89.99112707725199
+- 0.20603937055555122
+window:
+- 300
+- 160
+- 45

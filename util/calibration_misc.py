@@ -18,14 +18,16 @@ import shutil
 import os
 
 # extract window around the Bragg peak on an omega frame
-def fetch(ii,pks,fn,offset=0,dx=100,dy=50,verbo=False,more=False,pnx=2048,pny=2048,omega_step=20):
-    omegid=int((180-pks[ii,2])*omega_step)+offset
+def fetch(ii,pks,fn,offset=0,dx=100,dy=50,verbo=False,more=False,pnx=2048,pny=2048,omega_step=0.05,start_num=0):
+    num = int(180/omega_step)
+    omegid=int((180-pks[ii,2])*(1/omega_step))+offset
     
     if omegid<0:
-        omegid+=3600
-    if omegid>=3600:
-        omegid-=3600
-    I=plt.imread(fn+'{0:06d}.tif'.format(omegid))
+        omegid+=num
+    if omegid>=num:
+        omegid-=num
+    
+    I=plt.imread(fn+'{0:06d}.tif'.format(omegid+start_num))
     
     x1=int((pny-1-pks[ii,0])-dx)
     y1=int(pks[ii,1]-dy)
@@ -66,7 +68,7 @@ def getCenter2(Im,Omeg,dx=15,dy=7,do=2):
     return Py,Px,cy,cx,co
 
 
-def fetch_images(Cfg,grain,path):
+def fetch_images(Cfg,grain,path,start_num=0):
     
     if f'grain_%03d'%grain.grainID in os.listdir(path):
         shutil.rmtree(path+'grain_%03d/'%grain.grainID)
@@ -102,7 +104,7 @@ def fetch_images(Cfg,grain,path):
         # f,axis=plt.subplots(9,5)
 
         for offset in range(totoffset-rng_low,totoffset+rng_high):
-            Im,limits=fetch(ii,pks,raw_data,offset,dx=dx,dy=dy,more=True)
+            Im,limits=fetch(ii,pks,raw_data,offset,dx=dx,dy=dy,more=True,omega_step=Cfg.omgInterval,start_num=start_num)
 
 
             # ax.imshow(Im,vmin=0,vmax=30)        
@@ -119,6 +121,7 @@ def fetch_images(Cfg,grain,path):
     return 
 def process_images(grain,path,window,flucThresh):
     Nfile = len([f for f in os.listdir(path+'grain_%03d/RawImgData'%grain.grainID) if f[:2] == 'Im'])
+    
     Im=[]
     
     for ii in range(Nfile):
@@ -277,8 +280,8 @@ def optimize_detector(centers_of_mass,Cfg,grain,cutoff=[ 60,30,10]):
             absCOM[ii,1]=LimH[ii,2]+centers_of_mass[ii,2]
             absCOM[ii,0]=Cfg.JPixelNum-1-(LimH[ii,0]+centers_of_mass[ii,1])
             absCOM[ii,2]=(LimH[ii,4]+centers_of_mass[ii,0])
-            if absCOM[ii,2] >= 3600:
-                absCOM[ii,2] -= 3600
+            if absCOM[ii,2] >= Cfg.omgRange[1]/Cfg.omgInterval:
+                absCOM[ii,2] -= Cfg.omgRange[1]/Cfg.omgInterval
             absCOM[ii,2] = 180-absCOM[ii,2]*Cfg.omgInterval
 
 
@@ -299,9 +302,9 @@ def optimize_detector(centers_of_mass,Cfg,grain,cutoff=[ 60,30,10]):
 
 
 
-def data_prep(Cfg,grain,path,flucThresh=4):
+def data_prep(Cfg,grain,path,flucThresh=4,start_num=0):
     
-    fetch_images(Cfg,grain,path)
+    fetch_images(Cfg,grain,path,start_num)
     
 
     process_images(grain,path,Cfg.window,flucThresh)
@@ -319,6 +322,10 @@ def data_prep(Cfg,grain,path,flucThresh=4):
                              Cfg.window[1]//3:2*Cfg.window[1]//3,
                              Cfg.window[0]//3:2*Cfg.window[0]//3].sum(axis=(1,2)))+Cfg.window[2]//3
         Py,Px,cy,cx,co = getCenter2(tmp,Omeg,dx=50,dy=50,do=5)
+        print(Omeg)
+        plt.imshow(tmp[Omeg])
+        plt.scatter(cx,cy)
+        plt.show()
         center = np.array([co,cx,cy])
         centers_of_mass.append(center)
     centers_of_mass = np.stack(centers_of_mass)
@@ -328,7 +335,7 @@ def write_config_file(x):
     
 
 
-    with open(f'Config_Files/Config.yml') as f:
+    with open(f'Config_Files/Config_template.yml') as f:
         data = yaml.safe_load(f)
 
 
@@ -386,8 +393,8 @@ def optimize_distortion(Cfg,grain,centers_of_mass,path):
         absCOM[ii,1]=LimH[ii,2]+centers_of_mass[ii,2]
         absCOM[ii,0]=Cfg.JPixelNum-1-(LimH[ii,0]+centers_of_mass[ii,1])
         absCOM[ii,2]=(LimH[ii,4]+centers_of_mass[ii,0])
-        if absCOM[ii,2] >= 3600:
-            absCOM[ii,2] -= 3600
+        if absCOM[ii,2] >= Cfg.omgRange[1]/Cfg.omgInterval:
+            absCOM[ii,2] -= Cfg.omgRange[1]/Cfg.omgInterval
         absCOM[ii,2] = 180-absCOM[ii,2]*Cfg.omgInterval
     pars={'J':0,'K':0,'L':0,'tilt':(0,0,0),'x':0,'y':0,'distortion':((0,0,0),(0,0,0),(0,0,0))}
     DetDefault=Gsim.Detector(psizeJ=Cfg.pixelSize*1e-3, psizeK=Cfg.pixelSize*1e-3)
@@ -469,8 +476,8 @@ def write_peak_file(Cfg,grain,centers_of_mass,path,cutoff=10,opt=False):
             absCOM[ii,1]=LimH[ii,2]+centers_of_mass[ii,2]
             absCOM[ii,0]=Cfg.JPixelNum-1-(LimH[ii,0]+centers_of_mass[ii,1])
             absCOM[ii,2]=(LimH[ii,4]+centers_of_mass[ii,0])
-            if absCOM[ii,2] >= 3600:
-                absCOM[ii,2] -= 3600
+            if absCOM[ii,2] >= Cfg.omgRange[1]/Cfg.omgInterval:
+                absCOM[ii,2] -= Cfg.omgRange[1]/Cfg.omgInterval
             absCOM[ii,2] = 180-absCOM[ii,2]*Cfg.omgInterval
 
     

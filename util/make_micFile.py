@@ -35,8 +35,17 @@ def find_grains(Cfg,conf_tol,match_tol,voxel_size =0.002):
         grid_e1 = griddata(a.snp[:,0:2],a.snp[:,6],(grid_x,grid_y),method='nearest')
         grid_e2 = griddata(a.snp[:,0:2],a.snp[:,7],(grid_x,grid_y),method='nearest')
         grid_e3 = griddata(a.snp[:,0:2],a.snp[:,8],(grid_x,grid_y),method='nearest')
-
-    g = np.where(grid_c>conf_tol,1,0)
+        
+    eulers = np.stack([grid_e1,grid_e2,grid_e3]) 
+    right = np.abs(np.diff(eulers,axis=1,append=0)).mean(axis=0)
+    up = np.abs(np.diff(eulers,axis=2,append=0)).mean(axis=0)
+    
+    misorientation = np.max(np.stack([right,up]),axis=0)
+ 
+    
+        
+    
+    g = np.where(misorientation>conf_tol,0,1)
 
     labels,num_features = label(g)
 
@@ -84,7 +93,7 @@ def find_grains(Cfg,conf_tol,match_tol,voxel_size =0.002):
     ax[0].imshow(grid_c,origin='lower')
     ax[0].set_title('Confidence Map')
     ax[1].imshow(g,origin='lower')
-    ax[1].set_title('Thresholded and Binarized Confidence Map')
+    ax[1].set_title('Thresholded and Binarized Misorientation Map')
     ax[2].imshow(ll,origin='lower')
     ax[2].set_title('Blob Finder Results')
     ax[3].imshow(gg,origin='lower')
@@ -127,3 +136,5 @@ def find_grains(Cfg,conf_tol,match_tol,voxel_size =0.002):
     
     
     return GrainIDMap.max()
+
+

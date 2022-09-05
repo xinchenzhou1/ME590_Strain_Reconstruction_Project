@@ -1,8 +1,8 @@
-JCenter: 1181.4407547785004
+JCenter: 1181.3240392565904
 JPixelNum: 2048
-KCenter: 2023.4303651033235
+KCenter: 2023.52997154956
 KPixelNum: 2048
-Ldistance: 7.064826618313898
+Ldistance: 7.066385806442431
 atoms:
 - - 1/3.0
   - 2/3.0
@@ -22,7 +22,7 @@ basis:
 - - 0.0
   - 0.0
   - 1.0
-dataFile: /mnt/data/sparrow_data/NF-DataSets/2013-07_NF-Strain1/V/Suter_Jul13/NF/Ti7_WithHRM_Under2ndLoad/Ti7_WithHRM_Under2ndLoad__
+dataFile: /mnt/data/sparrow_data2/NF-DataSets/2013-07_NF-Strain1/V/Suter_Jul13/NF/Ti7_WithHRM_Under2ndLoad/Ti7_WithHRM_Under2ndLoad__
 dx: 150
 dy: 80
 energy: 51.9957
@@ -43,9 +43,9 @@ omgRange:
 pixelSize: 1.454
 sampleName: Ti7
 tilt:
-- 89.5715418293942
-- 90.0103249816796
-- 0.20032334862823054
+- 89.55815137749299
+- 89.99059427292461
+- 0.20610855264224923
 window:
 - 300
 - 160
