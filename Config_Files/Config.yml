@@ -22,7 +22,7 @@ basis:
 - - 0.0
   - 0.0
   - 1.0
-dataFile: /mnt/data/sparrow_data2/NF-DataSets/2013-07_NF-Strain1/V/Suter_Jul13/NF/Ti7_WithHRM_Under2ndLoad/Ti7_WithHRM_Under2ndLoad__
+dataFile: /mnt/data/temp/2013-07-NFStrain/NF/HRM_UnderLoad/Ti7_WithHRM_UnderLoad__
 dx: 150
 dy: 80
 energy: 51.9957
