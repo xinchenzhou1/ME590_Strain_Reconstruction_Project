@@ -1,4 +1,5 @@
 *.npy
 *.pyc
 *.yml
+!Config_Files/Config_template.yml
 __pycache__/
