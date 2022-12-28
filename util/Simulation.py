@@ -7,6 +7,7 @@ from util.config import Config
 import util.RotRep as Rot
 import h5py
 
+
 def frankie_angles_from_g(g, verbo=True, energy=50):
     """
     Converted from David's code, which converted from Bob's code.
@@ -26,31 +27,31 @@ def frankie_angles_from_g(g, verbo=True, energy=50):
     -------------
     2Theta and eta are in radian, chi, omega_a and omega_b are in degree. omega_a corresponding to positive y direction scatter, omega_b is negative y direction scatter.
     """
-    
-    ghat = g / np.linalg.norm(g);
+
+    ghat = g / np.linalg.norm(g)
     sin_theta = np.linalg.norm(g) / (energy * 0.506773182) / 2
-    cos_theta = np.sqrt(1 - sin_theta ** 2);
-    cos_chi = ghat[2];
-    sin_chi = np.sqrt(1 - cos_chi ** 2);
-    omega_0 = np.arctan2(ghat[0], ghat[1]);
+    cos_theta = np.sqrt(1 - sin_theta ** 2)
+    cos_chi = ghat[2]
+    sin_chi = np.sqrt(1 - cos_chi ** 2)
+    omega_0 = np.arctan2(ghat[0], ghat[1])
 
     if np.fabs(sin_theta) <= np.fabs(sin_chi):
-        phi = np.arccos(sin_theta / sin_chi);
-        sin_phi = np.sin(phi);
-        eta = np.arcsin(sin_chi * sin_phi / cos_theta);
-        delta_omega = np.arctan2(ghat[0], ghat[1]);
-        delta_omega_b1 = np.arcsin(sin_theta / sin_chi);
-        delta_omega_b2 = np.pi - delta_omega_b1;
-        omega_res1 = delta_omega + delta_omega_b1;
-        omega_res2 = delta_omega + delta_omega_b2;
+        phi = np.arccos(sin_theta / sin_chi)
+        sin_phi = np.sin(phi)
+        eta = np.arcsin(sin_chi * sin_phi / cos_theta)
+        delta_omega = np.arctan2(ghat[0], ghat[1])
+        delta_omega_b1 = np.arcsin(sin_theta / sin_chi)
+        delta_omega_b2 = np.pi - delta_omega_b1
+        omega_res1 = delta_omega + delta_omega_b1
+        omega_res2 = delta_omega + delta_omega_b2
         if omega_res1 > np.pi:
-            omega_res1 -= 2 * np.pi;
+            omega_res1 -= 2 * np.pi
         if omega_res1 < -np.pi:
-            omega_res1 += 2 * np.pi;
+            omega_res1 += 2 * np.pi
         if omega_res2 > np.pi:
-            omega_res2 -= 2 * np.pi;
+            omega_res2 -= 2 * np.pi
         if omega_res2 < -np.pi:
-            omega_res2 += 2 * np.pi;
+            omega_res2 += 2 * np.pi
     else:
         return -1
     if verbo == True:
@@ -64,11 +65,13 @@ def frankie_angles_from_g(g, verbo=True, energy=50):
     return {'chi': np.arccos(cos_chi) * 180 / np.pi, '2Theta': 2 * np.arcsin(sin_theta), 'eta': eta,
             'omega_a': omega_res1 * 180 / np.pi, 'omega_b': omega_res2 * 180 / np.pi, 'omega_0': omega_0 * 180 / np.pi}
 
-
 class Detector:
+    '''
+    "Virtual Detector": Parameters used are explained in section 3.2 of the paper
+    '''
     def __init__(self, psizeJ=0.00148, psizeK=0.00148, pnJ=2048, pnK=2048,
                  J=0, K=0, trans=np.array([0, 0, 0]),
-                 tilt=np.eye(3),config=False):
+                 tilt=np.eye(3), config=False):
         if config:
             psizeJ = config.pixelSize*1e-3
             psizeK = config.pixelSize*1e-3
@@ -76,10 +79,9 @@ class Detector:
             K = np.array(config.KCenter)
             pnK = config.KPixelNum
             pnJ = config.JPixelNum
-            trans = np.array([config.Ldistance,0.,0.])
+            trans = np.array([config.Ldistance, 0., 0.])
             tilt = Rot.EulerZXZ2Mat(np.array(config.tilt)/180.0*np.pi)
-            
-        
+
         self.__Norm = np.array([0, 0, 1])
         self.__CoordOrigin = np.array([0., 0., 0.])
         self.__Jvector = np.array([1, 0, 0])
@@ -94,63 +96,77 @@ class Detector:
         self.__tilt0 = tilt
         self.Move(J, K, trans, tilt)
 
-
     @property
     def Norm(self):
         return self.__Norm.copy()
+
     @property
     def CoordOrigin(self):
         return self.__CoordOrigin.copy()
+
     @property
     def Jvector(self):
         return self.__Jvector.copy()
+
     @property
     def Kvector(self):
         return self.__Kvector.copy()
-    def Move(self,J,K,trans,tilt):
-        self.__CoordOrigin-=J*self.__Jvector*self.__PixelJ+K*self.__Kvector*self.__PixelK
-        self.__CoordOrigin=tilt.dot(self.__CoordOrigin)+trans
-        
-        self.__Norm=tilt.dot(self.__Norm)
-        self.__Jvector=tilt.dot(self.__Jvector)
-        self.__Kvector=tilt.dot(self.__Kvector)
-    def IntersectionIdx(self,ScatterSrc,TwoTheta,eta,bIdx=True,checkBoundary=True):
-        dist=self.__Norm.dot(self.__CoordOrigin-ScatterSrc)
-        scatterdir=np.array([np.cos(TwoTheta),np.sin(TwoTheta)*np.sin(eta),np.sin(TwoTheta)*np.cos(eta)])
-        InterPos=dist/(self.__Norm.dot(scatterdir))*scatterdir+ScatterSrc
-        J=(self.__Jvector.dot(InterPos-self.__CoordOrigin)/self.__PixelJ)
-        K=(self.__Kvector.dot(InterPos-self.__CoordOrigin)/self.__PixelK)
+
+    def Move(self, J, K, trans, tilt):
+        self.__CoordOrigin -= J*self.__Jvector * \
+            self.__PixelJ+K*self.__Kvector*self.__PixelK
+        self.__CoordOrigin = tilt.dot(self.__CoordOrigin)+trans
+
+        self.__Norm = tilt.dot(self.__Norm)
+        self.__Jvector = tilt.dot(self.__Jvector)
+        self.__Kvector = tilt.dot(self.__Kvector)
+
+    def IntersectionIdx(self, ScatterSrc, TwoTheta, eta, bIdx=True, checkBoundary=True):
+        dist = self.__Norm.dot(self.__CoordOrigin-ScatterSrc)
+        scatterdir = np.array([np.cos(TwoTheta), np.sin(
+            TwoTheta)*np.sin(eta), np.sin(TwoTheta)*np.cos(eta)])
+        InterPos = dist/(self.__Norm.dot(scatterdir))*scatterdir+ScatterSrc
+        J = (self.__Jvector.dot(InterPos-self.__CoordOrigin)/self.__PixelJ)
+        K = (self.__Kvector.dot(InterPos-self.__CoordOrigin)/self.__PixelK)
         if checkBoundary:
             if 0 <= np.floor(J) < self.__NPixelJ and 0 <= np.floor(K) < self.__NPixelK:
-                if bIdx==True:
-                    return np.floor(J),np.floor(K)
+                if bIdx == True:
+                    return np.floor(J), np.floor(K)
                 else:
-                    return J,K
+                    return J, K
             else:
                 return -1
-        return J,K
-    def IntersectionIdxs(self,ScatterSrcs,TwoThetas,etas,bIdx=True):
-        ScatterSrcs=ScatterSrcs.reshape((3,-1))
-        TwoThetas=TwoThetas.ravel()
-        etas=etas.ravel()
-        dists=self.__Norm.dot(self.__CoordOrigin.reshape((3,1))-ScatterSrcs)
-        scatterdirs=np.array([np.cos(TwoThetas),np.sin(TwoThetas)*np.sin(etas),np.sin(TwoThetas)*np.cos(etas)]).reshape((3,-1))
-        InterPoss=dists/(self.__Norm.dot(scatterdirs))*scatterdirs+ScatterSrcs
-        Js=(self.__Jvector.dot(InterPoss-self.__CoordOrigin.reshape((3,1)))/self.__PixelJ)
-        Ks=(self.__Kvector.dot(InterPoss-self.__CoordOrigin.reshape((3,1)))/self.__PixelK)
-        if bIdx==False:
+        return J, K
+
+    def IntersectionIdxs(self, ScatterSrcs, TwoThetas, etas, bIdx=True):
+        ScatterSrcs = ScatterSrcs.reshape((3, -1))
+        TwoThetas = TwoThetas.ravel()
+        etas = etas.ravel()
+        dists = self.__Norm.dot(self.__CoordOrigin.reshape((3, 1))-ScatterSrcs)
+        scatterdirs = np.array([np.cos(TwoThetas), np.sin(
+            TwoThetas)*np.sin(etas), np.sin(TwoThetas)*np.cos(etas)]).reshape((3, -1))
+        InterPoss = dists/(self.__Norm.dot(scatterdirs)) * \
+            scatterdirs+ScatterSrcs
+        Js = (self.__Jvector.dot(
+            InterPoss-self.__CoordOrigin.reshape((3, 1)))/self.__PixelJ)
+        Ks = (self.__Kvector.dot(
+            InterPoss-self.__CoordOrigin.reshape((3, 1)))/self.__PixelK)
+        if bIdx == False:
             raise 'Not Implemented'
         else:
-            Js=np.floor(Js)
-            Ks=np.floor(Ks)
-            mask=(Js>=0)*(Js<self.__NPixelJ)*(Ks>=0)*(Ks<self.__NPixelK)
-            return Js,Ks,mask
-    def BackProj(self,HitPos,omega,TwoTheta,eta):
+            Js = np.floor(Js)
+            Ks = np.floor(Ks)
+            mask = (Js >= 0)*(Js < self.__NPixelJ) * \
+                (Ks >= 0)*(Ks < self.__NPixelK)
+            return Js, Ks, mask
+
+    def BackProj(self, HitPos, omega, TwoTheta, eta):
         """
         HitPos: ndarray (3,)
                 The position of hitted point on lab coord, unit in mm
         """
-        scatterdir = np.array([np.cos(TwoTheta), np.sin(TwoTheta) * np.sin(eta), np.sin(TwoTheta) * np.cos(eta)])
+        scatterdir = np.array([np.cos(TwoTheta), np.sin(
+            TwoTheta) * np.sin(eta), np.sin(TwoTheta) * np.cos(eta)])
         t = HitPos[2] / (np.sin(TwoTheta) * np.cos(eta))
         x = HitPos[0] - t * np.cos(TwoTheta)
         y = HitPos[1] - t * np.sin(TwoTheta) * np.sin(eta)
@@ -173,19 +189,19 @@ class Detector:
 
 
 class CrystalStr:
-    def __init__(self, material='new',config=None):
+    def __init__(self, material='new', config=None):
         self.AtomPos = []
         self.AtomZs = []
-        if material=='new' and config is not None:
-        
+        if material == 'new' and config is not None:
+
             self.PrimA = config.lattice[0]*np.array(config.basis[0])
             self.PrimB = config.lattice[1]*np.array(config.basis[1])
             self.PrimC = config.lattice[2]*np.array(config.basis[2])
-            
+
             for atom in config.atoms:
                 pos = [eval(a) for a in atom[:3]]
-                self.addAtom(pos,atom[-1])
-            
+                self.addAtom(pos, atom[-1])
+
         if material == 'gold':
             self.PrimA = 4.08 * np.array([1, 0, 0])
             self.PrimB = 4.08 * np.array([0, 1, 0])
@@ -202,9 +218,11 @@ class CrystalStr:
             self.addAtom([0, 0.5, 0.5], 29)
             self.addAtom([0.5, 0, 0.5], 29)
             self.addAtom([0.5, 0.5, 0], 29)
+        # hexagonal unit cell (paper page 2)
         elif material == 'Ti7':
             self.PrimA = 2.92539 * np.array([1, 0, 0])
-            self.PrimB = 2.92539 * np.array([np.cos(np.pi * 2 / 3), np.sin(np.pi * 2 / 3), 0])
+            self.PrimB = 2.92539 * \
+                np.array([np.cos(np.pi * 2 / 3), np.sin(np.pi * 2 / 3), 0])
             self.PrimC = 4.67399 * np.array([0, 0, 1])
             self.addAtom([1 / 3.0, 2 / 3.0, 1 / 4.0], 22)
             self.addAtom([2 / 3.0, 1 / 3.0, 3 / 4.0], 22)
@@ -219,16 +237,25 @@ class CrystalStr:
     def addAtom(self, pos, Z):
         self.AtomPos.append(np.array(pos))
         self.AtomZs.append(Z)
-
+        
+    # Equation (35) from Far-field high-energy diffraction microscopy:
+    # a tool for intergranular orientation and strain analysis paper
     def getRecipVec(self):
-        self.RecipA = 2 * np.pi * np.cross(self.PrimB, self.PrimC) / (self.PrimA.dot(np.cross(self.PrimB, self.PrimC)))
-        self.RecipB = 2 * np.pi * np.cross(self.PrimC, self.PrimA) / (self.PrimB.dot(np.cross(self.PrimC, self.PrimA)))
-        self.RecipC = 2 * np.pi * np.cross(self.PrimA, self.PrimB) / (self.PrimC.dot(np.cross(self.PrimA, self.PrimB)))
+        self.RecipA = 2 * np.pi * \
+            np.cross(self.PrimB, self.PrimC) / \
+            (self.PrimA.dot(np.cross(self.PrimB, self.PrimC)))
+        self.RecipB = 2 * np.pi * \
+            np.cross(self.PrimC, self.PrimA) / \
+            (self.PrimB.dot(np.cross(self.PrimC, self.PrimA)))
+        self.RecipC = 2 * np.pi * \
+            np.cross(self.PrimA, self.PrimB) / \
+            (self.PrimC.dot(np.cross(self.PrimA, self.PrimB)))
 
     def calStructFactor(self, hkl):
         F = 0
         for ii in range(len(self.AtomZs)):
-            F += self.AtomZs[ii] * np.exp(-2 * np.pi * 1j * (hkl.dot(self.AtomPos[ii])))
+            F += self.AtomZs[ii] * \
+                np.exp(-2 * np.pi * 1j * (hkl.dot(self.AtomPos[ii])))
         return F
 
     def getGs(self, maxQ):
@@ -296,9 +323,12 @@ def GetProjectedVertex(Det1, sample, orien, etalimit, grainpos, getPeaksInfo=Fal
         else:
             if omegaL <= res['omega_a'] <= omegaU:
                 omega = res['omega_a'] / 180.0 * np.pi
-                newgrainx = np.cos(omega) * grainpos[0] - np.sin(omega) * grainpos[1]
-                newgrainy = np.cos(omega) * grainpos[1] + np.sin(omega) * grainpos[0]
-                idx = Det1.IntersectionIdx(np.array([newgrainx, newgrainy, 0]), res['2Theta'], res['eta'], bIdx)
+                newgrainx = np.cos(omega) * \
+                    grainpos[0] - np.sin(omega) * grainpos[1]
+                newgrainy = np.cos(omega) * \
+                    grainpos[1] + np.sin(omega) * grainpos[0]
+                idx = Det1.IntersectionIdx(
+                    np.array([newgrainx, newgrainy, 0]), res['2Theta'], res['eta'], bIdx)
                 if idx != -1:
                     Peaks.append([idx[0], idx[1], res['omega_a']])
                     Gs.append(g1)
@@ -307,9 +337,12 @@ def GetProjectedVertex(Det1, sample, orien, etalimit, grainpos, getPeaksInfo=Fal
                                           '2Theta': res['2Theta'], 'eta': res['eta'], 'hkl': sample.hkls[ii]})
             if omegaL <= res['omega_b'] <= omegaU:
                 omega = res['omega_b'] / 180.0 * np.pi
-                newgrainx = np.cos(omega) * grainpos[0] - np.sin(omega) * grainpos[1]
-                newgrainy = np.cos(omega) * grainpos[1] + np.sin(omega) * grainpos[0]
-                idx = Det1.IntersectionIdx(np.array([newgrainx, newgrainy, 0]), res['2Theta'], -res['eta'], bIdx)
+                newgrainx = np.cos(omega) * \
+                    grainpos[0] - np.sin(omega) * grainpos[1]
+                newgrainy = np.cos(omega) * \
+                    grainpos[1] + np.sin(omega) * grainpos[0]
+                idx = Det1.IntersectionIdx(
+                    np.array([newgrainx, newgrainy, 0]), res['2Theta'], -res['eta'], bIdx)
                 if idx != -1:
                     Peaks.append([idx[0], idx[1], res['omega_b']])
                     Gs.append(g1)

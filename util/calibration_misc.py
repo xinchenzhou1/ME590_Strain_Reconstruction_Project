@@ -76,7 +76,7 @@ def fetch_images(Cfg,grain,path,start_num=0):
     os.mkdir(path+'grain_%03d/'%grain.grainID)
     os.mkdir(path+'grain_%03d/RawImgData/'%grain.grainID)
     os.mkdir(path+'grain_%03d/FilteredImgData/'%grain.grainID)
-    
+    # Cfg = Config_Files/Config_template.yml
     Det1=Gsim.Detector(config=Cfg)
     crystal_str=Gsim.CrystalStr(config=Cfg)
     crystal_str.getRecipVec()

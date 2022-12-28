@@ -1,5 +1,6 @@
 *.npy
 *.pyc
 *.yml
+*.hdf5
 !Config_Files/Config_template.yml
 __pycache__/

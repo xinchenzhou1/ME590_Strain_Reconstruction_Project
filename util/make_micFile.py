@@ -21,7 +21,7 @@ import os
 # Cfg - config file, conf_tol - Blob finding conf tolerance, match_tol - orientation tolerance
 
 
-def find_grains(Cfg, confidenceTol, misOrienMatchingTol, voxelSize=0.002):
+def find_grains(Cfg, confidenceTol, misOrienMatchingTol, voxelSize=0.002, eulerTol=1.0):
     # checks config files' hexomapFile data type, use directly if file extension is in .npy
     if Cfg.hexomapFile[-3:] == 'npy':
         hexomapArr = np.load(Cfg.hexomapFile)
@@ -55,42 +55,39 @@ def find_grains(Cfg, confidenceTol, misOrienMatchingTol, voxelSize=0.002):
     upEuler = np.abs(np.diff(eulerStacked, axis=2, append=0)).mean(axis=0)
     # difference between the two sets of euler angles
     misorientationMap = np.max(np.stack([rightEuler, upEuler]), axis=0)
-    
+
     # plot out different variables regarding euler angles:
-    fig, ax = plt.subplots(ncols=3, figsize=(20, 7))
-    ax[0].imshow(gridConfidence, origin='lower')
-    ax[0].set_title('Confidence Map')
-    ax[1].imshow(gridX, origin='lower')
-    ax[1].set_title('gridX')
-    ax[2].imshow(gridY, origin='lower')
-    ax[2].set_title('gridY')
-    
-    fig, ax = plt.subplots(ncols=3, figsize=(20, 7))
-    ax[0].imshow(gridEuler1, origin='lower')
-    ax[0].set_title('gridEuler1')
-    ax[1].imshow(gridEuler2, origin='lower')
-    ax[1].set_title('gridEuler2')
-    ax[2].imshow(gridEuler3, origin='lower')
-    ax[2].set_title('gridEuler3')
-    
-    fig, ax = plt.subplots(ncols=3, figsize=(20, 7))
-    ax[0].imshow(rightEuler, origin='lower')
-    ax[0].set_title('Right Euler')
-    ax[1].imshow(upEuler, origin='lower')
-    ax[1].set_title('Up Euler')
-    ax[2].imshow(misorientationMap, origin = 'lower')
-    ax[2].set_title('misorientation Map')
-    
+    # fig, ax = plt.subplots(ncols=3, figsize=(20, 7))
+    # ax[0].imshow(gridConfidence, origin='lower')
+    # ax[0].set_title('Confidence Map')
+    # ax[1].imshow(gridX, origin='lower')
+    # ax[1].set_title('gridX')
+    # ax[2].imshow(gridY, origin='lower')
+    # ax[2].set_title('gridY')
+
+    # fig, ax = plt.subplots(ncols=3, figsize=(20, 7))
+    # ax[0].imshow(gridEuler1, origin='lower')
+    # ax[0].set_title('gridEuler1')
+    # ax[1].imshow(gridEuler2, origin='lower')
+    # ax[1].set_title('gridEuler2')
+    # ax[2].imshow(gridEuler3, origin='lower')
+    # ax[2].set_title('gridEuler3')
+
+    # fig, ax = plt.subplots(ncols=3, figsize=(20, 7))
+    # ax[0].imshow(rightEuler, origin='lower')
+    # ax[0].set_title('Right Euler')
+    # ax[1].imshow(upEuler, origin='lower')
+    # ax[1].set_title('Up Euler')
+    # ax[2].imshow(misorientationMap, origin = 'lower')
+    # ax[2].set_title('misorientation Map')
+
     # fig, ax = plt.subplots(ncols=3, figsize=(20, 7))
     # ax[0].imshow(np.abs(np.diff(eulerStacked, axis=1, append=0)), origin='lower')
     # ax[0].set_title('eulerStacked diff axis 1')
     # ax[1].imshow(np.abs(np.diff(eulerStacked, axis=2, append=0)), origin='lower')
     # ax[1].set_title('eulerStacked diff axis 2')
     # ax[2].imshow(np.stack([rightEuler, upEuler]), origin='lower')
-    # ax[2].set_title('right up stacked') 
-    
-    
-    
+    # ax[2].set_title('right up stacked')
 
     # Thresholded and Binarized Misorientation Map
     blobFindingArr = np.where(misorientationMap > confidenceTol, 0, 1)
@@ -103,7 +100,8 @@ def find_grains(Cfg, confidenceTol, misOrienMatchingTol, voxelSize=0.002):
     # All the 1s would be the potential grain boundaries.
 
     blobFindingLabels, numFeatures = label(blobFindingArr)
-    print("Number of features found using blob finder: ", numFeatures)
+    #print("Number of features found using blob finder: ", numFeatures)
+
     # Lowering the threshold results in identifying more features, vice versa
     # label() uses a four way search to connect neighbours of each non-zero values in input and count as features
     # lables is the labeled 2D array where 1s are considered as objects and 0s are
@@ -111,14 +109,14 @@ def find_grains(Cfg, confidenceTol, misOrienMatchingTol, voxelSize=0.002):
     # num_features sums up the number of "objects"
 
     blobFindingRes = np.float32(blobFindingLabels.copy())
-    blobFindingRes[blobFindingRes == 0] = np.nan
-    fig, ax = plt.subplots(ncols=3, figsize=(20, 7))
-    ax[0].imshow(blobFindingArr, origin='lower')
-    ax[0].set_title('blobFindingArr before labeling')    
-    ax[1].imshow(blobFindingLabels, origin='lower')
-    ax[1].set_title('blobFindingLabels')
-    ax[2].imshow(blobFindingRes, origin='lower')
-    ax[2].set_title('blobFindingLabels after removing zeros')
+    # blobFindingRes[blobFindingRes == 0] = np.nan
+    # fig, ax = plt.subplots(ncols=3, figsize=(20, 7))
+    # ax[0].imshow(blobFindingArr, origin='lower')
+    # ax[0].set_title('blobFindingArr before labeling')
+    # ax[1].imshow(blobFindingLabels, origin='lower')
+    # ax[1].set_title('blobFindingLabels')
+    # ax[2].imshow(blobFindingRes, origin='lower')
+    # ax[2].set_title('blobFindingLabels after removing zeros')
     # sets the background to nan - this is used to plot the blob finder results plot
 
     # dict to store center of mass of 3 euler angles for each grain
@@ -134,34 +132,38 @@ def find_grains(Cfg, confidenceTol, misOrienMatchingTol, voxelSize=0.002):
 
     # (419, 456) array of zeros
     grainIDMap = np.zeros(gridConfidence.shape, dtype=int)
-    
-    
-    # It then takes the euler angles from the center of mass of each blob 
-    # and searches through all other voxels for matching euler angle values. 
-    # If the difference between the two sets of euler angles is less than 
+
+    # It then takes the euler angles from the center of mass of each blob
+    # and searches through all other voxels for matching euler angle values.
+    # If the difference between the two sets of euler angles is less than
     # 1 degree for each angle, the voxel is added to that grain.
+    # Boolean Multiplication:
+    # 0 x 0 = 0
+    # 0 x 1 = 0
+    # 1 x 0 = 0
+    # 1 x 1 = 1
     for grainID in grainDict:
-        (grainIDcomEuler1, grainIDcomEuler2, grainIDcomEuler3) = grainDict[grainID]
+        (grainIDcomEuler1, grainIDcomEuler2,
+         grainIDcomEuler3) = grainDict[grainID]
         tmp = gridConfidence > misOrienMatchingTol
-        tmp *= np.absolute(gridEuler1 - grainIDcomEuler1) < 1
-        tmp *= np.absolute(gridEuler2 - grainIDcomEuler2) < 1
-        tmp *= np.absolute(gridEuler3 - grainIDcomEuler3) < 1
+        tmp *= np.absolute(gridEuler1 - grainIDcomEuler1) < eulerTol
+        tmp *= np.absolute(gridEuler2 - grainIDcomEuler2) < eulerTol
+        tmp *= np.absolute(gridEuler3 - grainIDcomEuler3) < eulerTol
         grainIDMap[tmp] = grainID
-        # tmp2 = grainIDMap[tmp]
-        # plt.figure()
-        # plt.imshow(grainIDMap, origin='lower')
-        # plt.title('grainIDMap for grainID: %i' %grainID)
-        
+
     newGrainIDMap = grainIDMap.copy()
-    
+
     # np.unique() returns the sorted unique elements of grainIDMap array
     # the current grainIDMap contains duplicate grainIDs
     # the for loop will remove the duplicated grainID elements inside generated grainIDMap
     for index, grainIDValue in enumerate(np.unique(grainIDMap)):
         newGrainIDMap[newGrainIDMap == grainIDValue] = index
     grainIDMap = newGrainIDMap
+
+    # plot out the grain Map for the corresponding orientation matching coefficient
+
     print(gridX.min(), gridY.min())
-    
+
     with h5py.File(Cfg.micFile, 'w') as f:
         ds = f.create_dataset(
             "origin", data=np.array([gridX.min(), gridY.min()]))
@@ -180,20 +182,24 @@ def find_grains(Cfg, confidenceTol, misOrienMatchingTol, voxelSize=0.002):
     micAfterOrienMatching = np.float32(grainIDMap.copy())
     # removes zero values inside array micAfterOrienMatching
     micAfterOrienMatching[micAfterOrienMatching == 0] = np.nan
-    fig, ax = plt.subplots(ncols=4, figsize=(20, 7))
-    ax[0].imshow(gridConfidence, origin='lower')
-    ax[0].set_title('Confidence Map')
-    ax[1].imshow(blobFindingArr, origin='lower')
-    ax[1].set_title('Thresholded and Binarized Misorientation Map')
-    ax[2].imshow(blobFindingRes, origin='lower')
-    ax[2].set_title('Blob Finder Results')
-    ax[3].imshow(micAfterOrienMatching, origin='lower')
-    ax[3].set_title('Microstructure after Orientation Matching and Duplicate Grain Removal')
+    plt.figure()
+    plt.imshow(micAfterOrienMatching, origin='lower')
+    plt.title('grainIDMap for misorientation Matching %1.2f' %
+              misOrienMatchingTol)
     plt.show()
-    
-    print('Number of Grains Found:', grainIDMap.max())
-    
-    
+    # fig, ax = plt.subplots(ncols=4, figsize=(20, 7))
+    # ax[0].imshow(gridConfidence, origin='lower')
+    # ax[0].set_title('Confidence Map')
+    # ax[1].imshow(blobFindingArr, origin='lower')
+    # ax[1].set_title('Thresholded and Binarized Misorientation Map')
+    # ax[2].imshow(blobFindingRes, origin='lower')
+    # ax[2].set_title('Blob Finder Results')
+    # ax[3].imshow(micAfterOrienMatching, origin='lower')
+    # ax[3].set_title('Microstructure after Orientation Matching and Duplicate Grain Removal')
+    # plt.show()
+    print('Euler Tolerance applied:', eulerTol,
+          ' Number of Grains Found:', grainIDMap.max())
+
     # find the sorted grainID array from grainIDMap using np.unique(), ID starts from 1
     grainIDs = np.unique(grainIDMap)[1:]
 
@@ -215,12 +221,15 @@ def find_grains(Cfg, confidenceTol, misOrienMatchingTol, voxelSize=0.002):
         grainPosArr.append(grainPos)
         euler = np.array([gridEuler1[locations == 1].mean(
         ), gridEuler2[locations == 1].mean(), gridEuler3[locations == 1].mean()])
-        
+
         # write data into grain files
         data['grainID'] = grainID
-        data['peakFile'] = 'Peak_Files/grain_%03d/Peaks_%03d.hdf5' % (grainID, grainID)
-        data['recFile'] = 'Rec_Files/grain_%03d/Rec_%03d.hdf5' % (grainID, grainID)
-        data['pixHitFile'] = 'Rec_Files/grain_%03d/pixHit_%03d.hdf5' % (grainID, grainID)
+        data['peakFile'] = 'Peak_Files/grain_%03d/Peaks_%03d.hdf5' % (
+            grainID, grainID)
+        data['recFile'] = 'Rec_Files/grain_%03d/Rec_%03d.hdf5' % (
+            grainID, grainID)
+        data['pixHitFile'] = 'Rec_Files/grain_%03d/pixHit_%03d.hdf5' % (
+            grainID, grainID)
         data['grainPos'] = [float(g) for g in grainPos]
         data['euler'] = [float(e) for e in euler]
 
