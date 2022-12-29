@@ -218,7 +218,7 @@ class CrystalStr:
             self.addAtom([0, 0.5, 0.5], 29)
             self.addAtom([0.5, 0, 0.5], 29)
             self.addAtom([0.5, 0.5, 0], 29)
-        # hexagonal unit cell (paper page 2)
+        # hexagonal unit cell (paper section 2.2 Measuring orientation and strain by X-ray diffraction)
         elif material == 'Ti7':
             self.PrimA = 2.92539 * np.array([1, 0, 0])
             self.PrimB = 2.92539 * \
@@ -235,12 +235,19 @@ class CrystalStr:
         self.PrimC = np.array(z)
 
     def addAtom(self, pos, Z):
+        '''
+        pos: position of the atom
+        Z: atomic number
+        '''
         self.AtomPos.append(np.array(pos))
         self.AtomZs.append(Z)
         
     # Equation (35) from Far-field high-energy diffraction microscopy:
     # a tool for intergranular orientation and strain analysis paper
     def getRecipVec(self):
+        '''
+        Function to compute the 3 shape 1 x 3 Reciprocal Lattice Vectors (RLV)
+        '''
         self.RecipA = 2 * np.pi * \
             np.cross(self.PrimB, self.PrimC) / \
             (self.PrimA.dot(np.cross(self.PrimB, self.PrimC)))
@@ -252,6 +259,11 @@ class CrystalStr:
             (self.PrimC.dot(np.cross(self.PrimA, self.PrimB)))
 
     def calStructFactor(self, hkl):
+        '''
+        The structure factor F_hkl is a mathematical function describing 
+        the amplitude and phase of a wave diffracted from crystal lattice 
+        planes characterised by Miller indices h,k,l.
+        '''
         F = 0
         for ii in range(len(self.AtomZs)):
             F += self.AtomZs[ii] * \
@@ -259,8 +271,17 @@ class CrystalStr:
         return F
 
     def getGs(self, maxQ):
+        '''
+        Function to compute reciprocal lattice of G_hkl, 
+        where (h, k, l) corresponds to a set of three Miller indices
+        RecipA, RecipB, RecipC represent 1 x 3 Reciprocal Lattice Vectors (RLV)
+        For loop is used to pick the right choice of RLV such that they satisfy condition where
+        a' * a = 2 * pi * DeltaIJ (Kronecker Symbol), Kronecker delta, deltaIJ = 1 for i = j, 0 for i != j
+        
+        '''
         self.Gs = []
         self.hkls = []
+        # second norm of a 1 by 3 vector equals to sqrt(x1^2 + x2^2 + x3^2)
         maxh = int(maxQ / float(np.linalg.norm(self.RecipA)))
         maxk = int(maxQ / float(np.linalg.norm(self.RecipB)))
         maxl = int(maxQ / float(np.linalg.norm(self.RecipC)))
