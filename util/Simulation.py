@@ -65,10 +65,12 @@ def frankie_angles_from_g(g, verbo=True, energy=50):
     return {'chi': np.arccos(cos_chi) * 180 / np.pi, '2Theta': 2 * np.arcsin(sin_theta), 'eta': eta,
             'omega_a': omega_res1 * 180 / np.pi, 'omega_b': omega_res2 * 180 / np.pi, 'omega_0': omega_0 * 180 / np.pi}
 
+
 class Detector:
     '''
-    "Virtual Detector": Parameters used are explained in section 3.2 of the paper
+    "Virtual Detector": Parameters used are explained in section 3.2 Results section of the paper
     '''
+
     def __init__(self, psizeJ=0.00148, psizeK=0.00148, pnJ=2048, pnK=2048,
                  J=0, K=0, trans=np.array([0, 0, 0]),
                  tilt=np.eye(3), config=False):
@@ -189,6 +191,32 @@ class Detector:
 
 
 class CrystalStr:
+    '''
+    The class CrystalStr is used to construct crystal structures, 
+    currently it supports material of gold, silver and Ti7
+    
+    Attributes:
+        AtomPos: list
+            records position of the atom
+        AtomZs: list
+            records atomic number
+        PrimA: numpy array
+            hexagonal unit cell vector A
+        PrimB: numpy array
+            hexagonal unit cell vector B
+        PrimC: numpy array
+            hexagonal unit cell vector C
+        RecipA: numpy array
+            1 x 3 Reciprocal Lattice Vector A
+        RecipB: numpy array
+            1 x 3 Reciprocal Lattice Vector B
+        RecipC: numpy array
+            1 x 3 Reciprocal Lattice Vector C
+        Gs: list
+            List containing G = h * a' + k * b' + l * c'
+        hkls: list
+            List containing [h, k, l]
+    '''
     def __init__(self, material='new', config=None):
         self.AtomPos = []
         self.AtomZs = []
@@ -218,18 +246,22 @@ class CrystalStr:
             self.addAtom([0, 0.5, 0.5], 29)
             self.addAtom([0.5, 0, 0.5], 29)
             self.addAtom([0.5, 0.5, 0], 29)
-        # hexagonal unit cell (paper section 2.2 Measuring orientation and strain by X-ray diffraction)
+        # hexagonal unit cell 
+        # paper section 2.2 Measuring orientation and strain by X-ray diffraction
         elif material == 'Ti7':
-            self.PrimA = 2.92539 * np.array([1, 0, 0])
-            self.PrimB = 2.92539 * \
+            self.PrimA = config.lattice[0] * np.array([1, 0, 0])
+            self.PrimB = config.lattice[1] * \
                 np.array([np.cos(np.pi * 2 / 3), np.sin(np.pi * 2 / 3), 0])
-            self.PrimC = 4.67399 * np.array([0, 0, 1])
+            self.PrimC = config.lattice[2] * np.array([0, 0, 1])
             self.addAtom([1 / 3.0, 2 / 3.0, 1 / 4.0], 22)
             self.addAtom([2 / 3.0, 1 / 3.0, 3 / 4.0], 22)
         else:
             pass
 
     def setPrim(self, x, y, z):
+        '''
+        Manually set hexagonal unit cell vector A, B, C
+        '''
         self.PrimA = np.array(x)
         self.PrimB = np.array(y)
         self.PrimC = np.array(z)
@@ -241,7 +273,7 @@ class CrystalStr:
         '''
         self.AtomPos.append(np.array(pos))
         self.AtomZs.append(Z)
-        
+
     # Equation (35) from Far-field high-energy diffraction microscopy:
     # a tool for intergranular orientation and strain analysis paper
     def getRecipVec(self):
@@ -277,7 +309,7 @@ class CrystalStr:
         RecipA, RecipB, RecipC represent 1 x 3 Reciprocal Lattice Vectors (RLV)
         For loop is used to pick the right choice of RLV such that they satisfy condition where
         a' * a = 2 * pi * DeltaIJ (Kronecker Symbol), Kronecker delta, deltaIJ = 1 for i = j, 0 for i != j
-        
+
         '''
         self.Gs = []
         self.hkls = []
@@ -300,8 +332,9 @@ class CrystalStr:
         self.hkls = np.array(self.hkls)
 
 
-def GetProjectedVertex(Det1, sample, orien, etalimit, grainpos, getPeaksInfo=False, bIdx=True, omegaL=-90, omegaU=90,
-                       energy=50):
+def GetProjectedVertex(Det1, sample, orien, etalimit, 
+                       grainpos, getPeaksInfo=False, bIdx=True, omegaL=-90, 
+                       omegaU=90, energy=50):
     """
     Get the observable projected vertex on a single detector and their G vectors.
     Caution!!! This function only works for traditional nf-HEDM experiment setup.
@@ -331,6 +364,7 @@ def GetProjectedVertex(Det1, sample, orien, etalimit, grainpos, getPeaksInfo=Fal
     Peaks = []
     Gs = []
     PeaksInfo = []
+    
     rotatedG = orien.dot(sample.Gs.T).T
     for ii in range(len(rotatedG)):
         g1 = rotatedG[ii]
