@@ -21,7 +21,21 @@ import os
 
 
 def fetch(ii, pks, fn, offset=0, dx=100, dy=50, verbo=False, more=False, pnx=2048, pny=2048, omega_step=0.05, start_num=0):
-    num = int(180/omega_step)
+    '''
+    ii: index Number of the current peak
+    pks: N*3 ndarray, records position of each peak in the sample frame. 
+        The first column is the J value, second is K value, 
+        third is omega value in degree. 
+    fn: file path of the .tif files in Shull1 
+    dx: config.window[0] / 2
+    dy: config.window[1] / 2
+    
+    Returns:
+        1. Image Array of this omeg id captured from the .tif image file?
+        2. Tuple of the Image limit, contains (xLow, xHigh, yLow, yHigh, omegaID) 
+        
+    '''
+    num = int(180/omega_step)  # num = 3600 upper limit?
     omegid = int((180-pks[ii, 2])*(1/omega_step))+offset
 
     if omegid < 0:
@@ -61,7 +75,7 @@ def getCenter2(Im, Omeg, dx=15, dy=7, do=2):
     o_window[o_window > Im.shape[0]] = Im.shape[0]
 
     # print(o_window,labels.shape)
-    labels[o_window[0]:o_window[1], y_window[0]           :y_window[1], x_window[0]:x_window[1]] = 1
+    labels[o_window[0]:o_window[1], y_window[0]:y_window[1], x_window[0]:x_window[1]] = 1
 
     co, cy, cx = center_of_mass(Im, labels=labels, index=1)
     return Py, Px, cy, cx, co
@@ -86,8 +100,8 @@ def fetch_images(Cfg, grain, path, start_num=0):
                                             grain.grainPos, getPeaksInfo=True,
                                             omegaL=Cfg.omgRange[0], omegaU=Cfg.omgRange[1], energy=Cfg.energy)
 
-    dx, dy = Cfg.window[0]//2, Cfg.window[1]//2
-    window = Cfg.window
+    dx, dy = Cfg.window[0]//2, Cfg.window[1]//2  # dx = 150, dy = 80
+    window = Cfg.window  # window = [300, 160, 45]
     raw_data = Cfg.dataFile
 
     rng_low = window[2]//2
@@ -95,12 +109,13 @@ def fetch_images(Cfg, grain, path, start_num=0):
         rng_high = rng_low
     else:
         rng_high = rng_low + 1
+    # pks: Position of the peak, size (N, 3)
     for ii in range(len(pks)):
         allpks = []
         alllims = []
         totoffset = 0
         # f,axis=plt.subplots(9,5)
-
+        # offset from -22 to 23
         for offset in range(totoffset-rng_low, totoffset+rng_high):
             Im, limits = fetch(ii, pks, raw_data, offset, dx=dx, dy=dy,
                                more=True, omega_step=Cfg.omgInterval, start_num=start_num)
@@ -510,8 +525,7 @@ def write_peak_file(Cfg, grain, centers_of_mass, path, cutoff=10, opt=False):
             path+'grain_%03d/RawImgData/limit_%03d.npy' % (g, goodidx[ii]))
         img = np.load(path+'grain_%03d/FilteredImgData/Im_%03d.npy' %
                       (g, goodidx[ii]))
-        peakMap[:img.shape[1], :img.shape[2], ii * Cfg.window[2]
-            :(ii + 1) * Cfg.window[2]] = np.moveaxis(img, 0, -1)
+        peakMap[:img.shape[1], :img.shape[2], ii * Cfg.window[2]                :(ii + 1) * Cfg.window[2]] = np.moveaxis(img, 0, -1)
         LimH[ii, :] = limit[0]
         MaxInt[ii] = np.max(img)
         if Info[goodidx[ii]]['WhichOmega'] == 'b':

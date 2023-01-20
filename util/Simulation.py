@@ -28,12 +28,12 @@ def frankie_angles_from_g(g, verbo=True, energy=50):
     2Theta and eta are in radian, chi, omega_a and omega_b are in degree. omega_a corresponding to positive y direction scatter, omega_b is negative y direction scatter.
     """
 
-    ghat = g / np.linalg.norm(g)
-    sin_theta = np.linalg.norm(g) / (energy * 0.506773182) / 2
-    cos_theta = np.sqrt(1 - sin_theta ** 2)
-    cos_chi = ghat[2]
-    sin_chi = np.sqrt(1 - cos_chi ** 2)
-    omega_0 = np.arctan2(ghat[0], ghat[1])
+    ghat = g / np.linalg.norm(g) # (1, 3)
+    sin_theta = np.linalg.norm(g) / (energy * 0.506773182) / 2 # scalar
+    cos_theta = np.sqrt(1 - sin_theta ** 2) # scalar
+    cos_chi = ghat[2] # scalar
+    sin_chi = np.sqrt(1 - cos_chi ** 2) # scalar
+    omega_0 = np.arctan2(ghat[0], ghat[1]) # scalar
 
     if np.fabs(sin_theta) <= np.fabs(sin_chi):
         phi = np.arccos(sin_theta / sin_chi)
@@ -124,6 +124,11 @@ class Detector:
         self.__Kvector = tilt.dot(self.__Kvector)
 
     def IntersectionIdx(self, ScatterSrc, TwoTheta, eta, bIdx=True, checkBoundary=True):
+        '''
+        ScatterSrc: (newGrainX, newGrainY, 0) shape: (1, 3)
+        TwoTheta: radian
+        eta: radian
+        '''
         dist = self.__Norm.dot(self.__CoordOrigin-ScatterSrc)
         scatterdir = np.array([np.cos(TwoTheta), np.sin(
             TwoTheta)*np.sin(eta), np.sin(TwoTheta)*np.cos(eta)])
@@ -196,6 +201,7 @@ class CrystalStr:
     currently it supports material of gold, silver and Ti7
     
     Attributes:
+    ----------
         AtomPos: list
             records position of the atom
         AtomZs: list
@@ -345,11 +351,11 @@ def GetProjectedVertex(Det1, sample, orien, etalimit,
             Remember to move this detector object to correct position first.
     sample: CrystalStr
             Must calculated G list
-    orien:  ndarray
+    orien:  ndarray (3, 3)
             Active rotation matrix of orientation at that vertex
     etalimit: scalar
             Limit of eta value. Usually is about 85.
-    grainpos: array
+    grainpos: array (1, 3)
             Position of that vertex in mic file, unit is mm.
     energy: scalar
         X ray energy in the unit of KeV
@@ -364,11 +370,16 @@ def GetProjectedVertex(Det1, sample, orien, etalimit,
     Peaks = []
     Gs = []
     PeaksInfo = []
-    
+    # Active rotation matrix of orientation at that vertex dot product
+    # sample Gs: (1048, 3) orien: (3, 3)
+    # [(3, 3) * (3, 1048)]' = (1048, 3)
     rotatedG = orien.dot(sample.Gs.T).T
+    
+    # len(rotatedG) = 1048
     for ii in range(len(rotatedG)):
+        # g1: (1, 3) array
         g1 = rotatedG[ii]
-        res = frankie_angles_from_g(g1, verbo=False, energy=energy)
+        res = frankie_angles_from_g(g1, verbo=False, energy=energy) # res is dict
         if res == -1:
             pass
         elif res['chi'] >= 90:
