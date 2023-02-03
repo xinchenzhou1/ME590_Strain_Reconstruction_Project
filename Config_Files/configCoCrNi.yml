@@ -1,0 +1,60 @@
+JCenter: 1030.3662897434112
+JPixelNum: 2048
+KCenter: 2023.344867048178
+KPixelNum: 2048
+Ldistance: 5.5725092287900475
+atoms:
+- - 0/1.0
+  - 0/1.0
+  - 0/1.0
+  - 79
+- - 0/1.0
+  - 1/2.0
+  - 1/2.0
+  - 79
+- - 1/2.0
+  - 0/1.0
+  - 1/2.0
+  - 79
+- - 1/2.0
+  - 1/2.0
+  - 0/1.0
+  - 79
+basis:
+- - 1.0
+  - 0.0
+  - 0.0
+- - 0.0
+  - 1.0
+  - 0.0
+- - 0.0
+  - 0.0
+  - 1.0
+dataFile: /mnt/data/sparrow_data2/NF-DataSets/2021-02_HEA-Gordon/nf/gordon_CoCrNi_sam1_s0_nf/gordon_CoCrNi_sam1_s0_nf_
+dx: 150
+dy: 80
+energy: 71.676
+etalimit: 81
+grainTemp: Config_Files/grain_template.yml
+hexomapFile: AuxData/CoCrNi_sam1_npy/gordon_CoCrNi_sam1_s0_nf_q9_rot720_z0_500x500_0.002_shift_0.0_0.0_0.0.npy
+lattice:
+- 3.567
+- 3.567
+- 3.567
+maxQ: 9
+micFile: Mic_File/CoCrNi_fcc.hdf5
+mode: rec
+omgInterval: 0.25
+omgRange:
+- 0
+- 180
+pixelSize: 1.48
+sampleName: CoCrNi_fcc
+tilt:
+- 90.54895844110509
+- 89.41294756379654
+- -0.488475595611612
+window:
+- 50
+- 40
+- 25

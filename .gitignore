@@ -3,4 +3,7 @@
 *.yml
 *.hdf5
 !Config_Files/Config_template.yml
+!Config_Files/configTemplateCoCrNi.yml
+!Config_Files/configCoCrNi.yml
+!AuxData/gordon_CoCrNi_sam1_s0_nf_q9_rot720_z0_500x500_0.002_shift_0.0_0.0_0.0.npy
 __pycache__/
