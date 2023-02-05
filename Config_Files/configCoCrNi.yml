@@ -30,13 +30,13 @@ basis:
 - - 0.0
   - 0.0
   - 1.0
-dataFile: /mnt/data/sparrow_data2/NF-DataSets/2021-02_HEA-Gordon/nf/gordon_CoCrNi_sam1_s0_nf/gordon_CoCrNi_sam1_s0_nf_
+dataFile: /mnt/mountsparrow/2021-02_HEA-Gordon/nf/gordon_CoCrNi_sam1_s0_nf/gordon_CoCrNi_sam1_s0_nf_
 dx: 150
 dy: 80
 energy: 71.676
 etalimit: 81
 grainTemp: Config_Files/grain_template.yml
-hexomapFile: AuxData/CoCrNi_sam1_npy/gordon_CoCrNi_sam1_s0_nf_q9_rot720_z0_500x500_0.002_shift_0.0_0.0_0.0.npy
+hexomapFile: AuxData/gordon_CoCrNi_sam1_s0_nf_q9_rot720_z0_500x500_0.002_shift_0.0_0.0_0.0.npy
 lattice:
 - 3.567
 - 3.567
